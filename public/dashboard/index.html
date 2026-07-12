@@ -78,6 +78,33 @@ body{font-family:'Inter',sans-serif;background:var(--bg0);color:var(--t1);min-he
 .chg.flat{background:rgba(139,156,199,.1);color:var(--t2)}
 .cmp-note{display:flex;align-items:flex-start;gap:8px;padding:10px 14px;margin-top:8px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:10px;font-size:12px;color:var(--t2)}
 .cmp-note .material-icons-round{font-size:16px;color:var(--orange);flex-shrink:0;margin-top:1px}
+/* Thanh cong cu: loc thoi gian + xuat bao cao */
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 28px;background:var(--bg1);border-bottom:1px solid var(--bd);flex-wrap:wrap}
+.tb-left,.tb-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tb-lbl{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t2);font-weight:500}
+.tb-lbl .material-icons-round{font-size:16px;color:var(--cyan)}
+.tb-btn{display:flex;align-items:center;gap:6px;padding:7px 13px;border-radius:8px;border:1px solid var(--bd);background:var(--bg2);color:var(--t1);font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:.2s}
+.tb-btn:hover{border-color:var(--blue);background:rgba(59,130,246,.12)}
+.tb-btn .material-icons-round{font-size:16px}
+/* Badge trang thai SLA */
+.sla{font-weight:600;font-size:11px;padding:2px 9px;border-radius:20px;display:inline-flex;align-items:center;gap:3px;white-space:nowrap}
+.sla .material-icons-round{font-size:13px}
+.sla.ok{background:rgba(16,185,129,.15);color:var(--green)}
+.sla.bad{background:rgba(239,68,68,.15);color:var(--red)}
+.kpi.sla-ok::before{background:linear-gradient(90deg,var(--green),var(--cyan))!important}
+.kpi.sla-bad::before{background:linear-gradient(90deg,var(--red),var(--orange))!important}
+.kpi-sla{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;margin-top:6px}
+.kpi-sla.ok{color:var(--green)}.kpi-sla.bad{color:var(--red)}
+.kpi-sla .material-icons-round{font-size:14px}
+@media(max-width:768px){.toolbar{padding:10px 14px}}
+/* In / xuat PDF: an giao dien phu, chi giu noi dung tab dang xem */
+@media print{
+  .header,.tabs,.toolbar,.filter-bar{display:none!important}
+  body{background:#fff;color:#000}
+  .box,.kpi,.cmp-section{break-inside:avoid;border-color:#ccc!important;box-shadow:none!important}
+  .main{padding:0}
+  .panel{display:none!important}.panel.active{display:block!important}
+}
 </style>
 </head>
 <body>
@@ -93,12 +120,44 @@ body{font-family:'Inter',sans-serif;background:var(--bg0);color:var(--t1);min-he
   </div>
 </header>
 <nav class="tabs">
-  <button class="tab active" data-t="lt"><span class="material-icons-round">speed</span>Leadtime</button>
+  <button class="tab active" data-t="ov"><span class="material-icons-round">dashboard</span>Tổng Quan</button>
+  <button class="tab" data-t="lt"><span class="material-icons-round">speed</span>Leadtime</button>
   <button class="tab" data-t="cost"><span class="material-icons-round">payments</span>Cost</button>
   <button class="tab" data-t="prod"><span class="material-icons-round">trending_up</span>Năng Suất</button>
 </nav>
+<div class="toolbar">
+  <div class="tb-left">
+    <span class="tb-lbl"><span class="material-icons-round">date_range</span>Khoảng thời gian</span>
+    <select class="fsel" id="gRange">
+      <option value="all" selected>Toàn bộ</option>
+      <option value="7">7 ngày gần nhất</option>
+      <option value="30">30 ngày gần nhất</option>
+      <option value="90">90 ngày gần nhất</option>
+      <option value="custom">Tùy chọn…</option>
+    </select>
+    <input type="date" class="fsel" id="gFrom" style="display:none">
+    <input type="date" class="fsel" id="gTo" style="display:none">
+  </div>
+  <div class="tb-right">
+    <button class="tb-btn" id="btnPng" title="Tải ảnh biểu đồ tab hiện tại"><span class="material-icons-round">image</span>PNG</button>
+    <button class="tb-btn" id="btnCsv" title="Xuất dữ liệu tab hiện tại ra CSV"><span class="material-icons-round">table_view</span>CSV</button>
+    <button class="tb-btn" id="btnPdf" title="In / lưu PDF tab hiện tại"><span class="material-icons-round">picture_as_pdf</span>PDF</button>
+  </div>
+</div>
 <main class="main">
-  <div class="panel active" id="lt">
+  <div class="panel active" id="ov">
+    <div class="kpis" id="ovKpis"></div>
+    <div class="alerts-hd"><span class="material-icons-round">flag</span>Trạng Thái Mục Tiêu (SLA)</div>
+    <div id="ovSla"></div>
+    <div class="grid2" style="margin-top:20px">
+      <div class="box"><div class="box-hd"><div><div class="box-title">Leadtime TB Có Trọng Số — Theo Ngày</div><div class="box-sub">Xu hướng leadtime toàn kỳ</div></div></div><div class="cwrap"><canvas id="co1"></canvas></div></div>
+      <div class="box"><div class="box-hd"><div><div class="box-title">Cost/Kg — Theo Ngày</div><div class="box-sub">Xu hướng chi phí trên kg</div></div></div><div class="cwrap"><canvas id="co2"></canvas></div></div>
+    </div>
+    <div class="grid1">
+      <div class="box"><div class="box-hd"><div><div class="box-title">Năng Suất (Đơn/h) — Theo Tuần</div><div class="box-sub">Xu hướng năng suất xử lý đơn</div></div></div><div class="cwrap"><canvas id="co3"></canvas></div></div>
+    </div>
+  </div>
+  <div class="panel" id="lt">
     <div class="kpis" id="ltKpis"></div>
     <div class="filter-bar">
       <select class="fsel" id="ltView"><option value="daily">Theo Ngày</option><option value="weekly">Theo Tuần</option><option value="monthly">Theo Tháng</option></select>

@@ -21,6 +21,7 @@
 
   function rerender() {
     try {
+      if (window.rebuildAll) { window.rebuildAll(); return; }
       if (window.buildLT) window.buildLT();
       if (window.buildCost) window.buildCost();
       if (window.buildProd) window.buildProd();
