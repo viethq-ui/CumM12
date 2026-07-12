@@ -1,0 +1,5 @@
+# Chuẩn hóa xuống dòng: text tự nhận diện, checkout LF (tốt cho build Linux/Cloudflare).
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.ico binary

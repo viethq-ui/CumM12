@@ -1,0 +1,16 @@
+node_modules/
+.next/
+# Build output của Cloudflare next-on-pages / wrangler
+.vercel/
+.wrangler/
+.env
+.env.local
+.env*.local
+npm-debug.log*
+*.pem
+*.log
+# Khoá service account (KHÔNG bao giờ commit)
+service-account*.json
+gcp-*.json
+*-key.json
+.DS_Store

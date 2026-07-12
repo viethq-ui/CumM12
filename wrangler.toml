@@ -1,0 +1,9 @@
+name = "ghn-dashboard"
+compatibility_date = "2024-11-01"
+# nodejs_compat cần cho next-on-pages (Next.js runtime edge dùng vài API Node).
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = ".vercel/output/static"
+
+# LƯU Ý: KHÔNG đặt secret (NEXTAUTH_SECRET, DASHBOARD_PASSWORD…) ở đây.
+# Đặt chúng trong Cloudflare Pages > Settings > Environment variables (dạng Secret).
+# Xem DEPLOY-CLOUDFLARE.md.

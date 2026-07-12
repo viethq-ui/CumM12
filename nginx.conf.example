@@ -1,0 +1,47 @@
+# Mẫu cấu hình Nginx cho GHN Dashboard (app chạy PM2 ở 127.0.0.1:1235)
+# Đặt vào /etc/nginx/sites-available/ghn-dashboard rồi symlink sang sites-enabled.
+# Đổi dashboard.ghn.vn thành domain thật của bạn.
+
+# Chuyển hết HTTP -> HTTPS
+server {
+    listen 80;
+    server_name dashboard.ghn.vn;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name dashboard.ghn.vn;
+
+    # Chứng chỉ TLS (dùng certbot/Let's Encrypt là tiện nhất):
+    #   sudo certbot --nginx -d dashboard.ghn.vn
+    ssl_certificate     /etc/letsencrypt/live/dashboard.ghn.vn/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/dashboard.ghn.vn/privkey.pem;
+
+    # SSE real-time: KHÔNG buffer, giữ kết nối lâu
+    location /api/stream {
+        proxy_pass http://127.0.0.1:1235;
+        proxy_http_version 1.1;
+        proxy_set_header Connection '';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_buffering off;
+        proxy_cache off;
+        proxy_read_timeout 1h;
+    }
+
+    # Toàn bộ phần còn lại
+    location / {
+        proxy_pass http://127.0.0.1:1235;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
