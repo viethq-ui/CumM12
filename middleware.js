@@ -8,7 +8,7 @@ function isProtected(pathname) {
     pathname === '/' ||
     pathname.startsWith('/dashboard') ||
     pathname === '/api/data' ||
-    pathname === '/api/stream'
+    pathname === '/api/warehouses'
   );
 }
 

@@ -24,9 +24,11 @@ export async function GET(req) {
     });
   }
 
-  // 3) Trả dữ liệu (chỉ đúng các trường dashboard cần).
+  // 3) Trả dữ liệu của kho được chọn (?wh=key). Server tự map key -> sheetId
+  //    (không nhận URL/ID từ client) để giữ chống SSRF.
+  const wh = new URL(req.url).searchParams.get('wh') || undefined;
   try {
-    const { data, ok } = await getData();
+    const { data, ok } = await getData(wh);
     if (!ok || !data) {
       return Response.json({ error: 'Data unavailable' }, { status: 503 });
     }
