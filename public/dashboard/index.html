@@ -149,48 +149,57 @@ body{font-family:'Inter',sans-serif;background:var(--bg0);color:var(--t1);min-he
     <div class="kpis" id="ovKpis"></div>
     <div class="alerts-hd"><span class="material-icons-round">flag</span>Trạng Thái Mục Tiêu (SLA)</div>
     <div id="ovSla"></div>
-    <div class="grid2" style="margin-top:20px">
-      <div class="box"><div class="box-hd"><div><div class="box-title">Leadtime TB Có Trọng Số — Theo Ngày</div><div class="box-sub">Xu hướng leadtime toàn kỳ</div></div></div><div class="cwrap"><canvas id="co1"></canvas></div></div>
-      <div class="box"><div class="box-hd"><div><div class="box-title">Cost/Kg — Theo Ngày</div><div class="box-sub">Xu hướng chi phí trên kg</div></div></div><div class="cwrap"><canvas id="co2"></canvas></div></div>
+    <div class="alerts-hd"><span class="material-icons-round">date_range</span>Theo Tuần — so với mục tiêu</div>
+    <div class="grid2">
+      <div class="box"><div class="box-hd"><div><div class="box-title">Leadtime (giờ)</div><div class="box-sub">8 tuần gần nhất vs mục tiêu ≤5h</div></div></div><div class="cwrap"><canvas id="ow1"></canvas></div></div>
+      <div class="box"><div class="box-hd"><div><div class="box-title">Cost / Kg (đ)</div><div class="box-sub">8 tuần gần nhất vs mục tiêu ≤119đ</div></div></div><div class="cwrap"><canvas id="ow2"></canvas></div></div>
     </div>
-    <div class="grid1">
-      <div class="box"><div class="box-hd"><div><div class="box-title">Năng Suất (Đơn/h) — Theo Tuần</div><div class="box-sub">Xu hướng năng suất xử lý đơn</div></div></div><div class="cwrap"><canvas id="co3"></canvas></div></div>
+    <div class="grid2">
+      <div class="box"><div class="box-hd"><div><div class="box-title">Năng suất Đơn/h</div><div class="box-sub">8 tuần gần nhất vs mục tiêu ≥100</div></div></div><div class="cwrap"><canvas id="ow3"></canvas></div></div>
+      <div class="box"><div class="box-hd"><div><div class="box-title">Năng suất W/h (Kg/h)</div><div class="box-sub">8 tuần gần nhất vs mục tiêu ≥190</div></div></div><div class="cwrap"><canvas id="ow4"></canvas></div></div>
+    </div>
+    <div class="alerts-hd"><span class="material-icons-round">event_note</span>Theo Tháng — so với mục tiêu</div>
+    <div class="grid2">
+      <div class="box"><div class="box-hd"><div><div class="box-title">Leadtime (giờ)</div><div class="box-sub">Theo tháng vs mục tiêu ≤5h</div></div></div><div class="cwrap"><canvas id="om1"></canvas></div></div>
+      <div class="box"><div class="box-hd"><div><div class="box-title">Cost / Kg (đ)</div><div class="box-sub">Theo tháng vs mục tiêu ≤119đ</div></div></div><div class="cwrap"><canvas id="om2"></canvas></div></div>
+    </div>
+    <div class="grid2">
+      <div class="box"><div class="box-hd"><div><div class="box-title">Năng suất Đơn/h</div><div class="box-sub">Theo tháng vs mục tiêu ≥100</div></div></div><div class="cwrap"><canvas id="om3"></canvas></div></div>
+      <div class="box"><div class="box-hd"><div><div class="box-title">Năng suất W/h (Kg/h)</div><div class="box-sub">Theo tháng vs mục tiêu ≥190</div></div></div><div class="cwrap"><canvas id="om4"></canvas></div></div>
     </div>
   </div>
   <div class="panel" id="lt">
     <div class="kpis" id="ltKpis"></div>
-    <div class="filter-bar">
-      <select class="fsel" id="ltView"><option value="daily">Theo Ngày</option><option value="weekly">Theo Tuần</option><option value="monthly">Theo Tháng</option></select>
-      <select class="fsel" id="ltSlot"><option value="all">Tất cả Móc giờ</option><option value="0-6h">0-6h</option><option value="6-12h">6-12h</option><option value="12-24h">12-24h</option><option value=">24h">>24h</option></select>
+    <div class="grid2">
+      <div class="box"><div class="box-hd"><div><div class="box-title">Theo Ngày — Tuần này vs Tuần trước</div><div class="box-sub">Leadtime TB có trọng số từng thứ (T2→CN)</div></div></div><div class="cwrap"><canvas id="c1"></canvas></div></div>
+      <div class="box"><div class="box-hd"><div><div class="box-title">Theo Tuần — 5 tuần gần nhất</div><div class="box-sub">Leadtime TB có trọng số theo tuần</div></div></div><div class="cwrap"><canvas id="c2"></canvas></div></div>
     </div>
-    <div class="grid2"><div class="box"><div class="box-hd"><div><div class="box-title">LT Trung Bình Có Trọng Số</div><div class="box-sub">Σ(volume × leadtime) / Σ(volume) — theo ngày/tuần/tháng</div></div></div><div class="cwrap"><canvas id="c1"></canvas></div></div>
-    <div class="box"><div class="box-hd"><div><div class="box-title">Leadtime Theo Móc Giờ</div><div class="box-sub">LT trung bình có trọng số theo khung</div></div></div><div class="cwrap"><canvas id="c2"></canvas></div></div></div>
-    <div class="grid2"><div class="box"><div class="box-hd"><div><div class="box-title">Volume Theo Móc Giờ</div><div class="box-sub">Phân bổ volume theo khung giờ</div></div></div><div class="cwrap"><canvas id="c3"></canvas></div></div>
-    <div class="box"><div class="box-hd"><div><div class="box-title">Leadtime Theo Ngày Trong Tuần</div><div class="box-sub">So sánh leadtime các thứ</div></div></div><div class="cwrap"><canvas id="c4"></canvas></div></div></div>
-    <div class="alerts-hd"><span class="material-icons-round">warning</span>Cảnh Báo Leadtime</div>
-    <div class="alert-grid" id="ltAlerts"></div>
+    <div class="grid2">
+      <div class="box"><div class="box-hd"><div><div class="box-title">Tuần Sự Kiện Ngày Đôi</div><div class="box-sub">5/5, 6/6, 7/7… (7 ngày từ ngày đôi)</div></div></div><div class="cwrap"><canvas id="c3"></canvas></div></div>
+      <div class="box"><div class="box-hd"><div><div class="box-title">Theo Tháng — 4 tháng gần nhất</div><div class="box-sub">Leadtime TB có trọng số theo tháng</div></div></div><div class="cwrap"><canvas id="c4"></canvas></div></div>
+    </div>
   </div>
   <div class="panel" id="cost">
     <div class="kpis" id="costKpis"></div>
-    <div class="grid2"><div class="box"><div class="box-hd"><div><div class="box-title">Cost / Kg Xu Hướng</div><div class="box-sub">Biến động chi phí trên kg toàn kỳ</div></div></div><div class="cwrap"><canvas id="c5"></canvas></div></div>
-    <div class="box"><div class="box-hd"><div><div class="box-title">Cost/Kg TB Theo Tháng</div><div class="box-sub">So sánh chi phí trung bình theo tháng</div></div></div><div class="cwrap"><canvas id="c6"></canvas></div></div></div>
-    <div class="grid2"><div class="box"><div class="box-hd"><div><div class="box-title">Cost/Kg TB Theo Tuần</div><div class="box-sub">Biến động chi phí theo tuần</div></div></div><div class="cwrap"><canvas id="c7"></canvas></div></div>
-    <div class="box"><div class="box-hd"><div><div class="box-title">Chi Tiết 30 Ngày Gần Nhất</div><div class="box-sub">Cost/Kg từng ngày (đỏ = cao, xanh = thấp)</div></div></div><div class="cwrap"><canvas id="c8"></canvas></div></div></div>
-    <div class="alerts-hd"><span class="material-icons-round">warning</span>Cảnh Báo Cost</div>
-    <div class="alert-grid" id="costAlerts"></div>
+    <div class="grid2">
+      <div class="box"><div class="box-hd"><div><div class="box-title">Theo Ngày — Tuần này vs Tuần trước</div><div class="box-sub">Cost/Kg từng thứ (T2→CN)</div></div></div><div class="cwrap"><canvas id="c5"></canvas></div></div>
+      <div class="box"><div class="box-hd"><div><div class="box-title">Theo Tuần — 5 tuần gần nhất</div><div class="box-sub">Cost/Kg trung bình theo tuần</div></div></div><div class="cwrap"><canvas id="c6"></canvas></div></div>
+    </div>
+    <div class="grid2">
+      <div class="box"><div class="box-hd"><div><div class="box-title">Tuần Sự Kiện Ngày Đôi</div><div class="box-sub">5/5, 6/6, 7/7… (7 ngày từ ngày đôi)</div></div></div><div class="cwrap"><canvas id="c7"></canvas></div></div>
+      <div class="box"><div class="box-hd"><div><div class="box-title">Theo Tháng — 4 tháng gần nhất</div><div class="box-sub">Cost/Kg trung bình theo tháng</div></div></div><div class="cwrap"><canvas id="c8"></canvas></div></div>
+    </div>
   </div>
   <div class="panel" id="prod">
     <div class="kpis" id="prodKpis"></div>
-    <div class="filter-bar">
-      <select class="fsel" id="prSlot"><option value="all">Tất cả khung giờ</option><option value="06h-18h">06h-18h</option><option value="18h-06h">18h-06h</option></select>
-      <select class="fsel" id="prType"><option value="all">Tất cả</option><option value="receive">Nhận hàng</option><option value="deliver">Giao hàng</option></select>
+    <div class="grid2">
+      <div class="box"><div class="box-hd"><div><div class="box-title">Theo Ngày — Tuần này vs Tuần trước</div><div class="box-sub">Năng suất Đơn/h từng thứ (T2→CN)</div></div></div><div class="cwrap"><canvas id="c9"></canvas></div></div>
+      <div class="box"><div class="box-hd"><div><div class="box-title">Theo Tuần — 5 tuần gần nhất</div><div class="box-sub">Đơn/h = Σ sản lượng ÷ Σ giờ công</div></div></div><div class="cwrap"><canvas id="c10"></canvas></div></div>
     </div>
-    <div class="grid2"><div class="box"><div class="box-hd"><div><div class="box-title">Năng Suất (Đơn/h) Theo Tuần</div><div class="box-sub">Số đơn xử lý mỗi giờ</div></div></div><div class="cwrap"><canvas id="c9"></canvas></div></div>
-    <div class="box"><div class="box-hd"><div><div class="box-title">Năng Suất (W/h) Theo Tuần</div><div class="box-sub">Kg xử lý mỗi giờ</div></div></div><div class="cwrap"><canvas id="c10"></canvas></div></div></div>
-    <div class="grid2"><div class="box"><div class="box-hd"><div><div class="box-title">So Sánh Ngày / Đêm</div><div class="box-sub">06h-18h vs 18h-06h</div></div></div><div class="cwrap"><canvas id="c11"></canvas></div></div>
-    <div class="box"><div class="box-hd"><div><div class="box-title">Nhận vs Giao Hàng</div><div class="box-sub">Năng suất receive vs deliver</div></div></div><div class="cwrap"><canvas id="c12"></canvas></div></div></div>
-    <div class="alerts-hd"><span class="material-icons-round">warning</span>Cảnh Báo Năng Suất</div>
-    <div class="alert-grid" id="prodAlerts"></div>
+    <div class="grid2">
+      <div class="box"><div class="box-hd"><div><div class="box-title">Tuần Sự Kiện Ngày Đôi</div><div class="box-sub">5/5, 6/6, 7/7… (7 ngày từ ngày đôi)</div></div></div><div class="cwrap"><canvas id="c11"></canvas></div></div>
+      <div class="box"><div class="box-hd"><div><div class="box-title">Theo Tháng — 4 tháng gần nhất</div><div class="box-sub">Đơn/h trung bình theo tháng</div></div></div><div class="cwrap"><canvas id="c12"></canvas></div></div>
+    </div>
   </div>
 </main>
 <!-- Dữ liệu real-time được boot.js nạp từ /api/data (poll định kỳ), rồi mới tải app.js -->
