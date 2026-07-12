@@ -1,7 +1,7 @@
 // ============ CẤU HÌNH NÂNG CẤP ============
 // MỤC TIÊU (SLA) — chỉnh các số này theo mục tiêu thực tế của kho.
 // leadtime & cost: THẤP hơn = tốt;  năng suất: CAO hơn = tốt.
-window.SLA = window.SLA || { leadtimeH: 12, costKg: 120, prodDonH: 30, prodWH: 500 };
+window.SLA = window.SLA || { leadtimeH: 5, costKg: 119, prodDonH: 100, prodWH: 190 };
 // Trạng thái bộ lọc khoảng thời gian toàn cục.
 window.RANGE = window.RANGE || { mode: 'all', from: null, to: null };
 
@@ -280,7 +280,9 @@ function buildProd(){
   const SLA=window.SLA;
   const weeks=[...new Set(PROD_DATA.map(d=>d[0]))].sort((a,b)=>a-b);
   if(!weeks.length){document.getElementById('prodKpis').innerHTML='<div class="kpi b" style="grid-column:1/-1"><div class="kpi-label">Năng suất</div><div class="kpi-val" style="font-size:15px">Không có dữ liệu trong khoảng đã chọn</div></div>';['c9','c10','c11','c12'].forEach(dc);document.getElementById('prodAlerts').innerHTML='';return;}
-  function aggByWeek(filter){return weeks.map(w=>{let d=PROD_DATA.filter(x=>x[0]===w);if(filter)d=filter(d);if(!d.length)return{donH:0,wH:0};return{donH:+(d.reduce((a,x)=>a+x[9],0)/d.length).toFixed(2),wH:+(d.reduce((a,x)=>a+x[11],0)/d.length).toFixed(2)}})}
+  // Năng suất tuần = Σ(sản lượng)/Σ(giờ công) và Σ(khối lượng)/Σ(giờ công).
+  function ratio(d){const H=d.reduce((a,x)=>a+x[5],0);const V=d.reduce((a,x)=>a+x[4],0);const W=d.reduce((a,x)=>a+x[6],0);return{donH:H?+(V/H).toFixed(2):0,wH:H?+(W/H).toFixed(2):0}}
+  function aggByWeek(filter){return weeks.map(w=>{let d=PROD_DATA.filter(x=>x[0]===w);if(filter)d=filter(d);return ratio(d)})}
 
   const allAgg=aggByWeek();
   const avgDonH=+(allAgg.reduce((a,x)=>a+x.donH,0)/allAgg.length).toFixed(2);
@@ -297,7 +299,7 @@ function buildProd(){
   function renderProd(){
     const sf=document.getElementById('prSlot').value,tf=document.getElementById('prType').value;
     const filter=d=>{let r=d;if(sf!=='all')r=r.filter(x=>x[2]===sf);if(tf!=='all')r=r.filter(x=>x[3]===tf);return r};
-    const data=weeks.map(w=>{let d=filter(PROD_DATA.filter(x=>x[0]===w));if(!d.length)return{donH:0,wH:0};return{donH:+(d.reduce((a,x)=>a+x[9],0)/d.length).toFixed(2),wH:+(d.reduce((a,x)=>a+x[11],0)/d.length).toFixed(2)}});
+    const data=weeks.map(w=>ratio(filter(PROD_DATA.filter(x=>x[0]===w))));
     const lbls=weeks.map(w=>'Tuần '+w);
     dc('c9');CI.c9=new Chart(document.getElementById('c9'),{type:'line',data:{labels:lbls,datasets:[{label:'Đơn/h',data:data.map(d=>d.donH),borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,.15)',fill:true,tension:.3,pointRadius:4,pointBackgroundColor:'#3b82f6'},{label:'TB',data:data.map(()=>avgDonH),borderColor:'#ef4444',borderDash:[5,5],pointRadius:0},{label:'Mục tiêu ('+SLA.prodDonH+')',data:data.map(()=>SLA.prodDonH),borderColor:'#10b981',borderDash:[8,4],borderWidth:2,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{title:{display:true,text:'Đơn/h'}}}}});
     dc('c10');CI.c10=new Chart(document.getElementById('c10'),{type:'line',data:{labels:lbls,datasets:[{label:'W/h (Kg)',data:data.map(d=>d.wH),borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.15)',fill:true,tension:.3,pointRadius:4,pointBackgroundColor:'#10b981'},{label:'TB',data:data.map(()=>avgWH),borderColor:'#f59e0b',borderDash:[5,5],pointRadius:0},{label:'Mục tiêu ('+SLA.prodWH+')',data:data.map(()=>SLA.prodWH),borderColor:'#3b82f6',borderDash:[8,4],borderWidth:2,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{title:{display:true,text:'Kg/h'}}}}});
@@ -360,9 +362,10 @@ function buildOverview(){
   // Cost/Kg TB (lọc giá trị hợp lệ)
   const cv=[]; C.dates.forEach((dt,i)=>{const v=C.costKg[i]; if(v!=null&&v>0&&v<500)cv.push(v);});
   const costAvg=cv.length?Math.round(cv.reduce((a,b)=>a+b,0)/cv.length):0;
-  // Năng suất TB
-  const donH=P.length?+(P.reduce((a,x)=>a+x[9],0)/P.length).toFixed(2):0;
-  const wH=P.length?+(P.reduce((a,x)=>a+x[11],0)/P.length).toFixed(2):0;
+  // Năng suất TB = Σ(sản lượng)/Σ(giờ công), Σ(khối lượng)/Σ(giờ công)
+  const _H=P.reduce((a,x)=>a+x[5],0);
+  const donH=_H?+(P.reduce((a,x)=>a+x[4],0)/_H).toFixed(2):0;
+  const wH=_H?+(P.reduce((a,x)=>a+x[6],0)/_H).toFixed(2):0;
 
   const okLT=ltAvg>0&&ltAvg<=S.leadtimeH, okC=costAvg>0&&costAvg<=S.costKg, okD=donH>=S.prodDonH, okW=wH>=S.prodWH;
   function card(cls,label,val,ok,tgt){return `<div class="kpi ${cls} ${ok?'sla-ok':'sla-bad'}"><div class="kpi-label">${label}</div><div class="kpi-val">${val}</div><div class="kpi-sla ${ok?'ok':'bad'}"><span class="material-icons-round">${ok?'check_circle':'error'}</span>${tgt}</div></div>`}
@@ -389,7 +392,7 @@ function buildOverview(){
   dc('co2'); if(cv.length){const cd=[],cc=[];C.dates.forEach((dt,i)=>{const v=C.costKg[i];if(v!=null&&v>0&&v<500){cd.push(dt);cc.push(v);}});CI.co2=new Chart(document.getElementById('co2'),{type:'line',data:{labels:cd,datasets:[{label:'Cost/Kg',data:cc,borderColor:'#ef4444',backgroundColor:'rgba(239,68,68,.1)',fill:true,tension:.3,pointRadius:2},{label:'Mục tiêu',data:cd.map(()=>S.costKg),borderColor:'#10b981',borderDash:[8,4],borderWidth:2,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}},scales:{y:{title:{display:true,text:'VNĐ/Kg'}},x:{ticks:{maxTicksLimit:20}}}}});}
   // co3: Năng suất theo tuần
   dc('co3'); const wks=[...new Set(P.map(d=>d[0]))].sort((a,b)=>a-b);
-  const wv=wks.map(w=>{const d=P.filter(x=>x[0]===w);return d.length?+(d.reduce((a,x)=>a+x[9],0)/d.length).toFixed(2):0;});
+  const wv=wks.map(w=>{const d=P.filter(x=>x[0]===w);const H=d.reduce((a,x)=>a+x[5],0);return H?+(d.reduce((a,x)=>a+x[4],0)/H).toFixed(2):0;});
   if(wks.length)CI.co3=new Chart(document.getElementById('co3'),{type:'line',data:{labels:wks.map(w=>'Tuần '+w),datasets:[{label:'Đơn/h',data:wv,borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,.12)',fill:true,tension:.3,pointRadius:4,pointBackgroundColor:'#3b82f6'},{label:'Mục tiêu',data:wks.map(()=>S.prodDonH),borderColor:'#10b981',borderDash:[8,4],borderWidth:2,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}},scales:{y:{title:{display:true,text:'Đơn/h'}}}}});
 }
 
@@ -411,7 +414,7 @@ function exportCSV(){
   const t=_activeTab();let rows=[];
   if(t==='lt'||t==='ov'){const LT=ltInRange();const m={};LT.forEach(([s,dt,v,p,lt])=>{if(!m[dt])m[dt]={vl:0,v:0};m[dt].vl+=v*lt;m[dt].v+=v;});rows=[['Ngày','Leadtime TB (h)','Số đơn']];Object.keys(m).sort().forEach(k=>rows.push([k,(m[k].vl/m[k].v).toFixed(2),m[k].v]));}
   else if(t==='cost'){const C=costInRange();rows=[['Ngày','Cost/Kg (đ)']];C.dates.forEach((dt,i)=>rows.push([dt,C.costKg[i]]));}
-  else if(t==='prod'){const P=prodInRange();const wks=[...new Set(P.map(d=>d[0]))].sort((a,b)=>a-b);rows=[['Tuần','Đơn/h TB','W/h TB']];wks.forEach(w=>{const d=P.filter(x=>x[0]===w);if(d.length)rows.push([w,(d.reduce((a,x)=>a+x[9],0)/d.length).toFixed(2),(d.reduce((a,x)=>a+x[11],0)/d.length).toFixed(2)]);});}
+  else if(t==='prod'){const P=prodInRange();const wks=[...new Set(P.map(d=>d[0]))].sort((a,b)=>a-b);rows=[['Tuần','Đơn/h','W/h']];wks.forEach(w=>{const d=P.filter(x=>x[0]===w);const H=d.reduce((a,x)=>a+x[5],0);if(H)rows.push([w,(d.reduce((a,x)=>a+x[4],0)/H).toFixed(2),(d.reduce((a,x)=>a+x[6],0)/H).toFixed(2)]);});}
   _dl('dashboard-'+t+'.csv',_csv(rows));
 }
 
