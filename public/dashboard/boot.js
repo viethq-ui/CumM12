@@ -5,7 +5,14 @@
 (function () {
   var POLL_MS = 20000;
   var current = null;
+  var whList = [];
   var appLoaded = false;
+
+  function applySla() {
+    for (var i = 0; i < whList.length; i++) {
+      if (whList[i].key === current && whList[i].sla) { window.SLA = whList[i].sla; return; }
+    }
+  }
   var sel = document.getElementById('whSelect');
   var stampEl = document.getElementById('dataStamp');
   var dotEl = document.getElementById('liveDot');
@@ -43,6 +50,7 @@
 
   function refresh() {
     if (!current) return;
+    applySla();
     json('/api/data?wh=' + encodeURIComponent(current))
       .then(function (d) {
         applyData(d);
@@ -60,6 +68,7 @@
     .then(function (j) {
       var list = (j && j.warehouses) || [];
       if (!list.length) { setStamp('Chưa cấu hình kho', false); return; }
+      whList = list;
       if (sel) {
         sel.innerHTML = list.map(function (w) {
           return '<option value="' + w.key + '">' + w.name + '</option>';
