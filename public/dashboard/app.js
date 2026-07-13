@@ -57,6 +57,12 @@ function _eventWeeks(dates){
 // ---- Chart.js ----
 Chart.defaults.color='#8b9cc7';Chart.defaults.borderColor='rgba(42,53,80,.5)';Chart.defaults.font.family='Inter';Chart.defaults.font.size=11;
 Chart.defaults.plugins.legend.labels.usePointStyle=true;
+
+// Hiện số liệu ngay trên đầu mỗi cột (bỏ qua đường mục tiêu/TB).
+function _fmtLbl(v){ if(v==null||v==='')return''; const n=+v; if(!isFinite(n))return String(v); if(Math.abs(n)>=1000)return (n/1000).toFixed(Math.abs(n)%1000===0?0:1)+'K'; return Number.isInteger(n)?String(n):n.toFixed(1); }
+const valueLabels={ id:'valueLabels', afterDatasetsDraw(chart){ const ctx=chart.ctx; chart.data.datasets.forEach((ds,di)=>{ if(ds.type==='line')return; const meta=chart.getDatasetMeta(di); if(meta.hidden)return; meta.data.forEach((el,i)=>{ const v=ds.data[i]; const t=_fmtLbl(v); if(!t)return; ctx.save(); ctx.fillStyle='#dbe4ff'; ctx.font='600 10px Inter, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.fillText(t, el.x, el.y-2); ctx.restore(); }); }); } };
+Chart.register(valueLabels);
+
 const CI={}; function dc(id){ if(CI[id]){CI[id].destroy();delete CI[id];} }
 function _noData(name){ return '<div class="kpi b" style="grid-column:1/-1"><div class="kpi-label">'+name+'</div><div class="kpi-val" style="font-size:15px">Không có dữ liệu trong khoảng đã chọn</div></div>'; }
 
@@ -182,20 +188,22 @@ function _hrMetric(H){
   return {dm,dates,metric};
 }
 function buildHR(){
-  const H=window.HR_DATA||{dates:[],fl:[]};
+  const S=window.SLA, H=window.HR_DATA||{dates:[],fl:[]};
   const {dm,dates,metric}=_hrMetric(H);
   if(!dates.length){ document.getElementById('nsKpis').innerHTML=_noData('Nhân sự'); ['ns1','ns2','ns3','ns4'].forEach(dc); return; }
+  const tgt=(S&&S.flnvct)||null; // FL/NVCT: THẤP hơn = tốt
   const overall=metric(dates), lastD=dates[dates.length-1], lastV=dm[lastD];
   const vals=dates.map(d=>dm[d]); const mn=Math.min.apply(null,vals), mx=Math.max.apply(null,vals);
+  const pass=tgt!=null?_countPass(dates,metric,tgt,false):null;
   document.getElementById('nsKpis').innerHTML=
-    _kpi('b','Tỷ lệ FL/NVCT TB',overall+'%')+
+    (tgt!=null?_kpiSla('b','Tỷ lệ FL/NVCT TB',overall+'%',overall<=tgt,'Mục tiêu ≤ '+tgt+'%'):_kpi('b','Tỷ lệ FL/NVCT TB',overall+'%'))+
     _kpi('o','Ngày Gần Nhất '+_dm(lastD),lastV+'%')+
     _kpi('p','Thấp / Cao',mn+'% - '+mx+'%')+
-    _kpi('g','Số Ngày Có Dữ Liệu',String(dates.length));
-  _dailyChart('ns1',metric,null,'%',dates);
-  _weeksChart('ns2',metric,null,'%',dates,5);
-  _eventChart('ns3',metric,null,'%',dates);
-  _monthsChart('ns4',metric,null,'%',dates,4);
+    (pass?_kpiSla('g','Số Ngày Đạt Mục Tiêu',pass.ok+'/'+pass.tot,pass.ok*2>=pass.tot,'≤ '+tgt+'%'):_kpi('g','Số Ngày Có Dữ Liệu',String(dates.length)));
+  _dailyChart('ns1',metric,tgt,'%',dates);
+  _weeksChart('ns2',metric,tgt,'%',dates,5);
+  _eventChart('ns3',metric,tgt,'%',dates);
+  _monthsChart('ns4',metric,tgt,'%',dates,4);
 }
 
 // ===== TỔNG QUAN =====
@@ -214,7 +222,7 @@ function buildOverview(){
     _kpiSla('o','Cost / Kg TB',cAll+'đ',okC,'Mục tiêu ≤ '+S.costKg+'đ')+
     _kpiSla('g','Năng suất Đơn/h TB',dAll,okD,'Mục tiêu ≥ '+S.prodDonH)+
     _kpiSla('p','Năng suất W/h TB',wAll,okW,'Mục tiêu ≥ '+S.prodWH)+
-    _kpi('b','Tỷ lệ FL/NVCT TB',hrAll+'%');
+    _kpiSla('b','Tỷ lệ FL/NVCT TB',hrAll+'%',hrAll>0&&hrAll<=(S.flnvct||20),'Mục tiêu ≤ '+(S.flnvct||20)+'%');
   function row(name,cur,tgt,ok){ return '<tr><td>'+name+'</td><td class="val">'+cur+'</td><td class="val">'+tgt+'</td><td>'+(ok?'<span class="sla ok"><span class="material-icons-round">check_circle</span>Đạt</span>':'<span class="sla bad"><span class="material-icons-round">error</span>Không đạt</span>')+'</td></tr>'; }
   document.getElementById('ovSla').innerHTML=
     '<div class="cmp-section"><table class="cmp-table"><thead><tr><th>Chỉ tiêu</th><th>Hiện tại</th><th>Mục tiêu</th><th>Trạng thái</th></tr></thead><tbody>'+
