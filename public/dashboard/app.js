@@ -230,6 +230,7 @@ function buildOverview(){
     row('Cost/Kg TB (đ)',cAll+'đ','≤ '+S.costKg+'đ',okC)+
     row('Năng suất Đơn/h',dAll,'≥ '+S.prodDonH,okD)+
     row('Năng suất W/h (Kg/h)',wAll,'≥ '+S.prodWH,okW)+
+    row('Tỷ lệ FL/NVCT (%)',hrAll+'%','≤ '+(S.flnvct||20)+'%',hrAll>0&&hrAll<=(S.flnvct||20))+
     '</tbody></table></div>';
   // Theo tuần (8 tuần) và theo tháng
   _weeksChart('ow1',LT.metric,S.leadtimeH,'h',LT.dates,8);
