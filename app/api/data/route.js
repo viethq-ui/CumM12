@@ -28,9 +28,9 @@ export async function GET(req) {
   //    (không nhận URL/ID từ client) để giữ chống SSRF.
   const wh = new URL(req.url).searchParams.get('wh') || undefined;
   try {
-    const { data, ok } = await getData(wh);
+    const { data, ok, error } = await getData(wh);
     if (!ok || !data) {
-      return Response.json({ error: 'Data unavailable' }, { status: 503 });
+      return Response.json({ error: 'Data unavailable', detail: error || null }, { status: 503 });
     }
     return Response.json(data, {
       headers: { 'Cache-Control': 'no-store' },
