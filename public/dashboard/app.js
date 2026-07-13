@@ -174,6 +174,30 @@ function buildProd(){
   _monthsChart('c12',D.metric,S.prodDonH,'đơn/h',dates,4);
 }
 
+// ===== NHÂN SỰ (Tỷ lệ FL/NVCT) =====
+function _hrMetric(H){
+  const dm={}; (H.dates||[]).forEach((dt,i)=>{ const v=(H.fl||[])[i]; if(v!=null && !isNaN(v)) dm[dt]=v; });
+  const dates=Object.keys(dm).sort();
+  const metric= arr=>{ let s=0,n=0; arr.forEach(d=>{if(dm[d]!=null){s+=dm[d];n++;}}); return n?+(s/n).toFixed(1):null; };
+  return {dm,dates,metric};
+}
+function buildHR(){
+  const H=window.HR_DATA||{dates:[],fl:[]};
+  const {dm,dates,metric}=_hrMetric(H);
+  if(!dates.length){ document.getElementById('nsKpis').innerHTML=_noData('Nhân sự'); ['ns1','ns2','ns3','ns4'].forEach(dc); return; }
+  const overall=metric(dates), lastD=dates[dates.length-1], lastV=dm[lastD];
+  const vals=dates.map(d=>dm[d]); const mn=Math.min.apply(null,vals), mx=Math.max.apply(null,vals);
+  document.getElementById('nsKpis').innerHTML=
+    _kpi('b','Tỷ lệ FL/NVCT TB',overall+'%')+
+    _kpi('o','Ngày Gần Nhất '+_dm(lastD),lastV+'%')+
+    _kpi('p','Thấp / Cao',mn+'% - '+mx+'%')+
+    _kpi('g','Số Ngày Có Dữ Liệu',String(dates.length));
+  _dailyChart('ns1',metric,null,'%',dates);
+  _weeksChart('ns2',metric,null,'%',dates,5);
+  _eventChart('ns3',metric,null,'%',dates);
+  _monthsChart('ns4',metric,null,'%',dates,4);
+}
+
 // ===== TỔNG QUAN =====
 function buildOverview(){
   const S=window.SLA;
@@ -183,11 +207,14 @@ function buildOverview(){
   const dAll=D.dates.length?D.metric(D.dates):0;
   const wAll=W.dates.length?W.metric(W.dates):0;
   const okLT=ltAll>0&&ltAll<=S.leadtimeH, okC=cAll>0&&cAll<=S.costKg, okD=dAll>=S.prodDonH, okW=wAll>=S.prodWH;
+  const HR=_hrMetric(window.HR_DATA||{dates:[],fl:[]});
+  const hrAll=HR.dates.length?HR.metric(HR.dates):0;
   document.getElementById('ovKpis').innerHTML=
     _kpiSla('b','Leadtime TB (trọng số)',ltAll+'h',okLT,'Mục tiêu ≤ '+S.leadtimeH+'h')+
     _kpiSla('o','Cost / Kg TB',cAll+'đ',okC,'Mục tiêu ≤ '+S.costKg+'đ')+
     _kpiSla('g','Năng suất Đơn/h TB',dAll,okD,'Mục tiêu ≥ '+S.prodDonH)+
-    _kpiSla('p','Năng suất W/h TB',wAll,okW,'Mục tiêu ≥ '+S.prodWH);
+    _kpiSla('p','Năng suất W/h TB',wAll,okW,'Mục tiêu ≥ '+S.prodWH)+
+    _kpi('b','Tỷ lệ FL/NVCT TB',hrAll+'%');
   function row(name,cur,tgt,ok){ return '<tr><td>'+name+'</td><td class="val">'+cur+'</td><td class="val">'+tgt+'</td><td>'+(ok?'<span class="sla ok"><span class="material-icons-round">check_circle</span>Đạt</span>':'<span class="sla bad"><span class="material-icons-round">error</span>Không đạt</span>')+'</td></tr>'; }
   document.getElementById('ovSla').innerHTML=
     '<div class="cmp-section"><table class="cmp-table"><thead><tr><th>Chỉ tiêu</th><th>Hiện tại</th><th>Mục tiêu</th><th>Trạng thái</th></tr></thead><tbody>'+
@@ -226,6 +253,7 @@ function exportCSV(){
   if(t==='lt'){ const m=_ltMetric(ltInRange()); rows=[['Tuần','Leadtime TB (h)']]; _lastWeeks(m.dates,999).forEach(w=>rows.push([w.label,m.metric(w.dates)])); }
   else if(t==='cost'){ const m=_costMetric(costInRange()); rows=[['Tuần','Cost/Kg TB (đ)']]; _lastWeeks(m.dates,999).forEach(w=>rows.push([w.label,m.metric(w.dates)])); }
   else if(t==='prod'){ const D=_prodMetric(prodInRange(),'don'), W=_prodMetric(prodInRange(),'w'); rows=[['Tuần','Đơn/h','W/h']]; _lastWeeks(D.dates,999).forEach(w=>rows.push([w.label,D.metric(w.dates),W.metric(w.dates)])); }
+  else if(t==='ns'){ const m=_hrMetric(window.HR_DATA||{dates:[],fl:[]}); rows=[['Tuần','Tỷ lệ FL/NVCT TB (%)']]; _lastWeeks(m.dates,999).forEach(w=>rows.push([w.label,m.metric(w.dates)])); }
   else { const S=window.SLA,LT=_ltMetric(ltInRange()),C=_costMetric(costInRange()),D=_prodMetric(prodInRange(),'don'),W=_prodMetric(prodInRange(),'w'); rows=[['Chỉ tiêu','Hiện tại','Mục tiêu'],['Leadtime TB (h)',LT.dates.length?LT.metric(LT.dates):0,'<= '+S.leadtimeH],['Cost/Kg TB (đ)',C.dates.length?C.metric(C.dates):0,'<= '+S.costKg],['Đơn/h',D.dates.length?D.metric(D.dates):0,'>= '+S.prodDonH],['W/h',W.dates.length?W.metric(W.dates):0,'>= '+S.prodWH]]; }
   _dl('dashboard-'+t+'.csv',_csv(rows));
 }
@@ -234,7 +262,7 @@ function exportCSV(){
 setInterval(()=>{const e=document.getElementById('clk');if(e)e.textContent=new Date().toLocaleString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});},1000);
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');const p=document.getElementById(b.dataset.t);if(p)p.classList.add('active');});
 
-function rebuildAll(){ [buildOverview,buildLT,buildCost,buildProd].forEach(fn=>{try{fn();}catch(e){console.error(e);}}); }
+function rebuildAll(){ [buildOverview,buildLT,buildCost,buildProd,buildHR].forEach(fn=>{try{fn();}catch(e){console.error(e);}}); }
 window.rebuildAll=rebuildAll;
 (function(){
   const gr=document.getElementById('gRange'),gf=document.getElementById('gFrom'),gt=document.getElementById('gTo');

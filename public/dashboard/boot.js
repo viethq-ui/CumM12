@@ -28,6 +28,7 @@
     window.COST_DATA = d.COST_DATA || { dates: [], costKg: [] };
     window.PROD_DATA = d.PROD_DATA || [];
     window.NOTES_DATA = d.NOTES_DATA || {};
+    window.HR_DATA = d.HR_DATA || { dates: [], fl: [] };
   }
 
   function json(url) {

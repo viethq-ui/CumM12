@@ -124,6 +124,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg0);color:var(--t1);min-he
   <button class="tab" data-t="lt"><span class="material-icons-round">speed</span>Leadtime</button>
   <button class="tab" data-t="cost"><span class="material-icons-round">payments</span>Cost</button>
   <button class="tab" data-t="prod"><span class="material-icons-round">trending_up</span>Năng Suất</button>
+  <button class="tab" data-t="ns"><span class="material-icons-round">groups</span>Nhân Sự</button>
 </nav>
 <div class="toolbar">
   <div class="tb-left">
@@ -201,6 +202,17 @@ body{font-family:'Inter',sans-serif;background:var(--bg0);color:var(--t1);min-he
     <div class="grid2">
       <div class="box"><div class="box-hd"><div><div class="box-title">Tuần Sự Kiện Ngày Đôi</div><div class="box-sub">5/5, 6/6, 7/7… (7 ngày từ ngày đôi)</div></div></div><div class="cwrap"><canvas id="c11"></canvas></div></div>
       <div class="box"><div class="box-hd"><div><div class="box-title">Theo Tháng — 4 tháng gần nhất</div><div class="box-sub">Đơn/h trung bình theo tháng</div></div></div><div class="cwrap"><canvas id="c12"></canvas></div></div>
+    </div>
+  </div>
+  <div class="panel" id="ns">
+    <div class="kpis" id="nsKpis"></div>
+    <div class="grid2">
+      <div class="box"><div class="box-hd"><div><div class="box-title">Theo Ngày — Tuần này vs Tuần trước</div><div class="box-sub">Tỷ lệ FL/NVCT từng thứ (T2→CN)</div></div></div><div class="cwrap"><canvas id="ns1"></canvas></div></div>
+      <div class="box"><div class="box-hd"><div><div class="box-title">Theo Tuần — 5 tuần gần nhất</div><div class="box-sub">Tỷ lệ FL/NVCT trung bình theo tuần</div></div></div><div class="cwrap"><canvas id="ns2"></canvas></div></div>
+    </div>
+    <div class="grid2">
+      <div class="box"><div class="box-hd"><div><div class="box-title">Tuần Sự Kiện Ngày Đôi</div><div class="box-sub">5/5, 6/6, 7/7… (7 ngày từ ngày đôi)</div></div></div><div class="cwrap"><canvas id="ns3"></canvas></div></div>
+      <div class="box"><div class="box-hd"><div><div class="box-title">Theo Tháng — 4 tháng gần nhất</div><div class="box-sub">Tỷ lệ FL/NVCT trung bình theo tháng</div></div></div><div class="cwrap"><canvas id="ns4"></canvas></div></div>
     </div>
   </div>
 </main>
