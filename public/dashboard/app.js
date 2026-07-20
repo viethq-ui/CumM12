@@ -38,11 +38,19 @@ function prodInRange(){ return (window.PROD_DATA||[]).filter(r=>inRange(_parseIS
 function costInRange(){ const D=window.COST_DATA||{dates:[],costKg:[],cost:[],kg:[]}; const o={dates:[],costKg:[],cost:[],kg:[]}; (D.dates||[]).forEach((dt,i)=>{ if(inRange(_parseDMY(dt))){o.dates.push(dt);o.costKg.push((D.costKg||[])[i]);o.cost.push((D.cost||[])[i]);o.kg.push((D.kg||[])[i]);} }); return o; }
 
 // ---- Nhóm ngày theo tuần ISO / tháng / tuần sự kiện ngày đôi ----
-// Tuần theo chuẩn kho: Chủ nhật -> Thứ 7. Gom theo ngày Thứ 7 kết thúc tuần.
+// Gom tuần theo SỐ TUẦN THỰC TẾ (cột B "Tuần" của Sheet, qua WEEK_MAP: ngày->số tuần).
+// Nhãn = "Tuần X". Nếu ngày thiếu ánh xạ -> fallback theo ngày Thứ 7 cuối tuần.
 function _weekEndSat(iso){ const d=_parseISO(iso); d.setDate(d.getDate()+(6-d.getDay())); return _isoStr(d); }
 function _lastWeeks(dates,n){
-  const by={}; dates.forEach(d=>{const k=_weekEndSat(d);(by[k]=by[k]||[]).push(d);});
-  return Object.keys(by).sort().slice(-n).map(k=>({dates:by[k],label:_dm(k)})); // nhãn = ngày Thứ 7 (dd/m)
+  const WM=window.WEEK_MAP||{}; const by={};
+  dates.forEach(d=>{
+    const wk=WM[d]; let key,label;
+    if(wk!=null){ key='W'+String(wk).padStart(3,'0'); label='Tuần '+wk; }
+    else { const s=_weekEndSat(d); key='D'+s; label=_dm(s); }
+    if(!by[key]) by[key]={dates:[],label}; by[key].dates.push(d);
+  });
+  const keys=Object.keys(by).sort((a,b)=>{ const ma=by[a].dates.slice().sort()[0], mb=by[b].dates.slice().sort()[0]; return ma<mb?-1:(ma>mb?1:0); });
+  return keys.slice(-n).map(k=>({dates:by[k].dates,label:by[k].label}));
 }
 function _lastMonths(dates,n){
   const by={}; dates.forEach(d=>{const k=d.slice(0,7);(by[k]=by[k]||[]).push(d);});

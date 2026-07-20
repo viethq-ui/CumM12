@@ -29,6 +29,7 @@
     window.PROD_DATA = d.PROD_DATA || [];
     window.NOTES_DATA = d.NOTES_DATA || {};
     window.HR_DATA = d.HR_DATA || { dates: [], fl: [] };
+    window.WEEK_MAP = d.WEEK_MAP || {};
   }
 
   function json(url) {
