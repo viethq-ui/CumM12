@@ -35,12 +35,14 @@ function _bounds(){
 function inRange(d){ const b=_bounds(); if(b.from&&d<b.from)return false; if(b.to&&d>b.to)return false; return true; }
 function ltInRange(){ return (window.LT_DATA||[]).filter(r=>inRange(_parseISO(r[1]))); }
 function prodInRange(){ return (window.PROD_DATA||[]).filter(r=>inRange(_parseISO(r[1]))); }
-function costInRange(){ const D=window.COST_DATA||{dates:[],costKg:[]}; const o={dates:[],costKg:[]}; (D.dates||[]).forEach((dt,i)=>{ if(inRange(_parseDMY(dt))){o.dates.push(dt);o.costKg.push((D.costKg||[])[i]);} }); return o; }
+function costInRange(){ const D=window.COST_DATA||{dates:[],costKg:[],cost:[],kg:[]}; const o={dates:[],costKg:[],cost:[],kg:[]}; (D.dates||[]).forEach((dt,i)=>{ if(inRange(_parseDMY(dt))){o.dates.push(dt);o.costKg.push((D.costKg||[])[i]);o.cost.push((D.cost||[])[i]);o.kg.push((D.kg||[])[i]);} }); return o; }
 
 // ---- Nhóm ngày theo tuần ISO / tháng / tuần sự kiện ngày đôi ----
+// Tuần theo chuẩn kho: Chủ nhật -> Thứ 7. Gom theo ngày Thứ 7 kết thúc tuần.
+function _weekEndSat(iso){ const d=_parseISO(iso); d.setDate(d.getDate()+(6-d.getDay())); return _isoStr(d); }
 function _lastWeeks(dates,n){
-  const by={}; dates.forEach(d=>{const k=_isoWeekKey(d);(by[k]=by[k]||[]).push(d);});
-  return Object.keys(by).map(Number).sort((a,b)=>a-b).slice(-n).map(k=>({dates:by[k],label:'T'+(k%100)}));
+  const by={}; dates.forEach(d=>{const k=_weekEndSat(d);(by[k]=by[k]||[]).push(d);});
+  return Object.keys(by).sort().slice(-n).map(k=>({dates:by[k],label:_dm(k)})); // nhãn = ngày Thứ 7 (dd/m)
 }
 function _lastMonths(dates,n){
   const by={}; dates.forEach(d=>{const k=d.slice(0,7);(by[k]=by[k]||[]).push(d);});
@@ -100,9 +102,14 @@ function _ltMetric(LT){
   return {dm,dates,metric,vol};
 }
 function _costMetric(C){
-  const dm={}; C.dates.forEach((dt,i)=>{ const v=C.costKg[i]; if(v!=null&&v>0&&v<500) dm[_dmy2iso(dt)]=v; });
+  // Cost/kg kỳ = Σ(Tổng chi phí)/Σ(KG). Ngày lẻ -> = cost/kg ngày đó (khớp cột H).
+  const dm={};
+  (C.dates||[]).forEach((dt,i)=>{
+    const cost=(C.cost||[])[i], kg=(C.kg||[])[i];
+    if(cost>0 && kg>0) dm[_dmy2iso(dt)]={cost,kg};
+  });
   const dates=Object.keys(dm).sort();
-  const metric= arr=>{ let s=0,n=0; arr.forEach(d=>{if(dm[d]!=null){s+=dm[d];n++;}}); return n?Math.round(s/n):null; };
+  const metric= arr=>{ let c=0,k=0; arr.forEach(d=>{if(dm[d]){c+=dm[d].cost;k+=dm[d].kg;}}); return k?+(c/k).toFixed(1):null; };
   return {dm,dates,metric};
 }
 function _prodMetric(P,key){
@@ -143,8 +150,8 @@ function buildCost(){
   const S=window.SLA, C=costInRange();
   const {dm,dates,metric}=_costMetric(C);
   if(!dates.length){ document.getElementById('costKpis').innerHTML=_noData('Cost'); ['c5','c6','c7','c8'].forEach(dc); return; }
-  const overall=metric(dates), lastD=dates[dates.length-1], lastV=dm[lastD];
-  const vals=dates.map(d=>dm[d]);
+  const overall=metric(dates), lastD=dates[dates.length-1], lastV=metric([lastD]);
+  const vals=dates.map(d=>metric([d]));
   const mn=Math.min.apply(null,vals), mx=Math.max.apply(null,vals);
   const pass=_countPass(dates,metric,S.costKg,false);
   document.getElementById('costKpis').innerHTML=
