@@ -36,6 +36,7 @@ function inRange(d){ const b=_bounds(); if(b.from&&d<b.from)return false; if(b.t
 function ltInRange(){ return (window.LT_DATA||[]).filter(r=>inRange(_parseISO(r[1]))); }
 function prodInRange(){ return (window.PROD_DATA||[]).filter(r=>inRange(_parseISO(r[1]))); }
 function costInRange(){ const D=window.COST_DATA||{dates:[],costKg:[],cost:[],kg:[]}; const o={dates:[],costKg:[],cost:[],kg:[]}; (D.dates||[]).forEach((dt,i)=>{ if(inRange(_parseDMY(dt))){o.dates.push(dt);o.costKg.push((D.costKg||[])[i]);o.cost.push((D.cost||[])[i]);o.kg.push((D.kg||[])[i]);} }); return o; }
+function hrInRange(){ const H=window.HR_DATA||{dates:[],fl:[],nvct:[]}; const o={dates:[],fl:[],nvct:[]}; (H.dates||[]).forEach((dt,i)=>{ if(inRange(_parseISO(dt))){o.dates.push(dt);o.fl.push((H.fl||[])[i]);o.nvct.push((H.nvct||[])[i]);} }); return o; }
 
 // ---- Nhóm ngày theo tuần ISO / tháng / tuần sự kiện ngày đôi ----
 // Gom tuần theo SỐ TUẦN THỰC TẾ (cột B "Tuần" của Sheet, qua WEEK_MAP: ngày->số tuần).
@@ -204,7 +205,7 @@ function _hrMetric(H){
   return {dm,dates,metric};
 }
 function buildHR(){
-  const S=window.SLA, H=window.HR_DATA||{dates:[],fl:[]};
+  const S=window.SLA, H=hrInRange();
   const {dm,dates,metric}=_hrMetric(H);
   if(!dates.length){ document.getElementById('nsKpis').innerHTML=_noData('Nhân sự'); ['ns1','ns2','ns3','ns4'].forEach(dc); return; }
   const tgt=(S&&S.flnvct)||null; // FL/NVCT: THẤP hơn = tốt
@@ -231,7 +232,7 @@ function buildOverview(){
   const dAll=D.dates.length?D.metric(D.dates):0;
   const wAll=W.dates.length?W.metric(W.dates):0;
   const okLT=ltAll>0&&ltAll<=S.leadtimeH, okC=cAll>0&&cAll<=S.costKg, okD=dAll>=S.prodDonH, okW=wAll>=S.prodWH;
-  const HR=_hrMetric(window.HR_DATA||{dates:[],fl:[]});
+  const HR=_hrMetric(hrInRange());
   const hrAll=HR.dates.length?HR.metric(HR.dates):0;
   document.getElementById('ovKpis').innerHTML=
     _kpiSla('b','Leadtime TB (trọng số)',ltAll+'h',okLT,'Mục tiêu ≤ '+S.leadtimeH+'h')+
