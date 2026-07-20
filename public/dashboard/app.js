@@ -189,9 +189,10 @@ function buildProd(){
 
 // ===== NHÂN SỰ (Tỷ lệ FL/NVCT) =====
 function _hrMetric(H){
-  const dm={}; (H.dates||[]).forEach((dt,i)=>{ const v=(H.fl||[])[i]; if(v!=null && !isNaN(v)) dm[dt]=v; });
+  // Tỷ lệ FL/NVCT kỳ = Σ(tỷ lệ ngày × NVCT ngày)/Σ(NVCT ngày) — weighted theo đầu người.
+  const dm={}; (H.dates||[]).forEach((dt,i)=>{ const r=(H.fl||[])[i]; if(r!=null && !isNaN(r)) dm[dt]={r, w:(H.nvct||[])[i]||0}; });
   const dates=Object.keys(dm).sort();
-  const metric= arr=>{ let s=0,n=0; arr.forEach(d=>{if(dm[d]!=null){s+=dm[d];n++;}}); return n?+(s/n).toFixed(1):null; };
+  const metric= arr=>{ let sr=0,sw=0,sumr=0,n=0; arr.forEach(d=>{if(dm[d]){sr+=dm[d].r*dm[d].w;sw+=dm[d].w;sumr+=dm[d].r;n++;}}); if(sw>0)return +(sr/sw).toFixed(1); return n?+(sumr/n).toFixed(1):null; };
   return {dm,dates,metric};
 }
 function buildHR(){
@@ -199,8 +200,8 @@ function buildHR(){
   const {dm,dates,metric}=_hrMetric(H);
   if(!dates.length){ document.getElementById('nsKpis').innerHTML=_noData('Nhân sự'); ['ns1','ns2','ns3','ns4'].forEach(dc); return; }
   const tgt=(S&&S.flnvct)||null; // FL/NVCT: THẤP hơn = tốt
-  const overall=metric(dates), lastD=dates[dates.length-1], lastV=dm[lastD];
-  const vals=dates.map(d=>dm[d]); const mn=Math.min.apply(null,vals), mx=Math.max.apply(null,vals);
+  const overall=metric(dates), lastD=dates[dates.length-1], lastV=metric([lastD]);
+  const vals=dates.map(d=>metric([d])); const mn=Math.min.apply(null,vals), mx=Math.max.apply(null,vals);
   const pass=tgt!=null?_countPass(dates,metric,tgt,false):null;
   document.getElementById('nsKpis').innerHTML=
     (tgt!=null?_kpiSla('b','Tỷ lệ FL/NVCT TB',overall+'%',overall<=tgt,'Mục tiêu ≤ '+tgt+'%'):_kpi('b','Tỷ lệ FL/NVCT TB',overall+'%'))+
