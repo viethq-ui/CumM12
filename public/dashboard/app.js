@@ -11,8 +11,9 @@ function _isoStr(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(
 function _dmy2iso(s){ const p=String(s).split('/'); return p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0'); }
 function _addDays(iso,n){ const d=_parseISO(iso); d.setDate(d.getDate()+n); return _isoStr(d); }
 function _mondayOf(iso){ const d=_parseISO(iso); const wd=(d.getDay()+6)%7; d.setDate(d.getDate()-wd); return _isoStr(d); }
+function _sundayOf(iso){ const d=_parseISO(iso); d.setDate(d.getDate()-d.getDay()); return _isoStr(d); } // Chủ nhật đầu tuần
 function _isoWeekKey(iso){ const t=_parseISO(iso); t.setHours(0,0,0,0); t.setDate(t.getDate()+3-((t.getDay()+6)%7)); const w1=new Date(t.getFullYear(),0,4); const wk=1+Math.round(((t-w1)/864e5-(3-((w1.getDay()+6)%7)))/7); return t.getFullYear()*100+wk; }
-const WD=['T2','T3','T4','T5','T6','T7','CN'];
+const WD=['CN','T2','T3','T4','T5','T6','T7'];
 function _dm(iso){ const p=iso.split('-'); return (+p[2])+'/'+(+p[1]); }
 function fN(n){ return n>=1e6?(n/1e6).toFixed(2)+'M':n>=1e3?(n/1e3).toFixed(0)+'K':String(Math.round(n)); }
 
@@ -88,9 +89,9 @@ function _barTarget(id, labels, vals, target, unit, color){
 function _dailyChart(id, metric, target, unit, dates){
   dc(id);
   if(!dates.length) return;
-  const mon=_mondayOf(dates[dates.length-1]);
+  const sun=_sundayOf(dates[dates.length-1]);
   const cur=[], prev=[];
-  for(let i=0;i<7;i++){ cur.push(metric([_addDays(mon,i)])); prev.push(metric([_addDays(mon,i-7)])); }
+  for(let i=0;i<7;i++){ cur.push(metric([_addDays(sun,i)])); prev.push(metric([_addDays(sun,i-7)])); }
   const ds=[
     {label:'Tuần này', data:cur, backgroundColor:'#3b82f6cc', borderRadius:5},
     {label:'Tuần trước', data:prev, backgroundColor:'#8b9cc766', borderRadius:5}
