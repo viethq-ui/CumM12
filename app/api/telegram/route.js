@@ -75,11 +75,5 @@ export async function POST(req) {
 }
 
 export async function GET() {
-  // Chẩn đoán: kiểm tra biến môi trường đã nạp chưa (KHÔNG lộ giá trị).
-  return Response.json({
-    ok: true,
-    info: 'Telegram webhook endpoint',
-    hasToken: !!process.env.TELEGRAM_BOT_TOKEN,
-    hasSecret: !!process.env.TELEGRAM_WEBHOOK_SECRET,
-  });
+  return Response.json({ ok: true, info: 'Telegram webhook endpoint' });
 }
